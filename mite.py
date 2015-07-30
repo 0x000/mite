@@ -22,7 +22,7 @@ class Fragment:
 
     @property
     def type(self):
-        if self.raw.startswith(TOKEN_OPEN):
+        if self.raw.startswith(TOKEN_OPEN) and self.raw.endswith(TOKEN_CLOSE):
             return FRAG_VAR
         return FRAG_TEXT
 
