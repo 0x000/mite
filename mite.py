@@ -3,8 +3,8 @@ import re
 TOKEN_OPEN = '{{'
 TOKEN_CLOSE = '}}'
 
-FRAG_VAR = 0
-FRAG_TEXT = 1
+FRAG_VAR = 0x00
+FRAG_TEXT = 0x01
 
 def resolve(identifier, context):
     for i in identifier.split('.'):
