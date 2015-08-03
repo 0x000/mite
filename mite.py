@@ -70,12 +70,11 @@ class Compiler:
                 output.append(Text(frag))
         return output
 
-    def _render_fragments(self, context):
-        """ Yields rendered Fragments. """
-        for frag in self.output:
-            yield frag.render(context)
-
     def render(self, context):
         """ Returns joined rendered Fragments. """
-        return ''.join(self._render_fragments(context))
+        def render_all(self, context):
+            for frag in self.output:
+                yield frag.render(context)
+
+        return ''.join(render_all(self, context))
 
