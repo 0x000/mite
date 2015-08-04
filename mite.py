@@ -1,10 +1,12 @@
 import re
 
+
 TOKEN_OPEN = '{{'
 TOKEN_CLOSE = '}}'
 
 FRAG_VAR = 0x00
 FRAG_TEXT = 0x01
+
 
 def resolve(identifier, context):
     for i in identifier.split('.'):
@@ -56,6 +58,10 @@ class Var(Fragment):
         return FRAG_VAR
 
 
+CLASS_VAR = Var
+CLASS_TEXT = Text
+
+
 class Compiler:
     def __init__(self, source):
         regex = re.compile(r'(%s.*?%s)' % (TOKEN_OPEN, TOKEN_CLOSE))
@@ -65,11 +71,11 @@ class Compiler:
     def compile(self):
         """ Returns a list of Var or Text objects. """
         output = []
-        for frag in self.fragments:
-            if Fragment(frag).type == FRAG_VAR:
-                output.append(Var(frag))
-            elif Fragment(frag).type == FRAG_TEXT:
-                output.append(Text(frag))
+        for fragment in self.fragments:
+            cls = CLASS_TEXT
+            if Fragment(fragment).type == FRAG_VAR:
+                cls = CLASS_VAR
+            output.append(cls(fragment))
         return output
 
     def render(self, context, func=resolve):
