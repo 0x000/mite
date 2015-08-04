@@ -16,19 +16,20 @@ class Fragment:
     def __init__(self, raw):
         self.raw = raw
 
-    def render(self, context):
-        """ Returns the rendered string. """
-        return ''
+    def render(self, context, func=resolve):
+        """ Must be overloaded. """
+        pass
 
     @property
     def type(self):
+        """ Returns the Fragment type. Should be overloaded. """
         if re.match(r'^%s.*?%s$' % (TOKEN_OPEN, TOKEN_CLOSE), self.raw):
             return FRAG_VAR
         return FRAG_TEXT
 
 
 class Text(Fragment):
-    def render(self, context):
+    def render(self, context, func=resolve):
         return self.raw
 
     @property
@@ -42,12 +43,13 @@ class Var(Fragment):
         self.identifier = self.clean_fragment()
 
     def clean_fragment(self):
+        """ Returns raw fragment without tokens. """
         raw = self.raw
         raw = raw.replace(TOKEN_OPEN, '').replace(TOKEN_CLOSE, '')
         return raw.strip()
 
-    def render(self, context):
-        return str(resolve(self.identifier, context))
+    def render(self, context, func=resolve):
+        return str(func(self.identifier, context))
 
     @property
     def type(self):
@@ -70,11 +72,11 @@ class Compiler:
                 output.append(Text(frag))
         return output
 
-    def render(self, context):
+    def render(self, context, func=resolve):
         """ Returns joined rendered Fragments. """
-        def render_all(self, context):
+        def render_all(self, context, func=resolve):
             for frag in self.output:
-                yield frag.render(context)
+                yield frag.render(context, func)
 
-        return ''.join(render_all(self, context))
+        return ''.join(render_all(self, context, func))
 
