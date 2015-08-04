@@ -1,11 +1,27 @@
 import re
 
-
 TOKEN_OPEN = '{{'
 TOKEN_CLOSE = '}}'
 
 FRAG_VAR = 0x00
 FRAG_TEXT = 0x01
+
+# This shit is for identifiers syntax validating
+VAR_SYNTAX = (r'^%s\s*(([a-zA-Z]+[0-9]*[a-zA-Z]*)'
+              '((\.?)(([a-zA-Z]+[0-9]*[a-zA-Z]*)))*)\s*%s$'
+              '' % (TOKEN_OPEN, TOKEN_CLOSE))
+
+VAR_REGEX = re.compile(VAR_SYNTAX)
+
+# Valid identifiers are:
+# {{ var    }}
+# {{va0r.var0.var}}
+# Non valid identifier are:
+# {{ 123 }}
+# {{ 12a }}
+# {{ 1.a.b }}
+# {{ 1a.b }}
+# And so on...
 
 
 def resolve(identifier, context):
@@ -25,7 +41,7 @@ class Fragment:
     @property
     def type(self):
         """ Returns the Fragment type. Should be overloaded. """
-        if re.match(r'^%s.*?%s$' % (TOKEN_OPEN, TOKEN_CLOSE), self.raw):
+        if VAR_REGEX.match(self.raw):
             return FRAG_VAR
         return FRAG_TEXT
 
@@ -42,13 +58,7 @@ class Text(Fragment):
 class Var(Fragment):
     def __init__(self, raw):
         self.raw = raw
-        self.identifier = self.clean_fragment()
-
-    def clean_fragment(self):
-        """ Returns raw fragment without tokens. """
-        raw = self.raw
-        raw = raw.replace(TOKEN_OPEN, '').replace(TOKEN_CLOSE, '')
-        return raw.strip()
+        self.identifier = VAR_REGEX.match(self.raw).group(1)
 
     def render(self, context, func=resolve):
         return str(func(self.identifier, context))
