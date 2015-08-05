@@ -23,57 +23,34 @@ def resolve(identifier, context):
     return context
 
 
-class Fragment:
-    def __init__(self, raw):
-        self.raw = raw
-
-    def render(self, context, func=resolve):
-        """ Must be overloaded. """
-        pass
-
-
-class Text(Fragment):
-    def render(self, context, func=resolve):
-        return self.raw
-
-    @property
-    def type(self):
-        return FRAG_TEXT
-
-
-class Var(Fragment):
-    def __init__(self, raw):
-        self.raw = raw
-        self.identifier = SYNTAX.match(self.raw).group(1)
-
-    def render(self, context, func=resolve):
-        return str(func(self.identifier, context))
-
-    @property
-    def type(self):
-        return FRAG_VAR
-
-
 class Compiler:
     def __init__(self, source):
         self.fragments = filter(None, TOKEN.split(source))
-        self.output = self.compile()
+        self.output = list(self.compile())
 
     def compile(self):
-        """ Returns a list of Var or Text objects. """
-        output = []
+        """
+        Returns a list of tuples.
+        
+        Each tuple has two information:
+        (`FRAG_VAR`, `identifier`)
+        (`FRAG_TEXT`, `text`)
+        """
         for fragment in self.fragments:
-            if SYNTAX.match(fragment):
-                output.append(Var(fragment))
+            var = SYNTAX.match(fragment)
+            if var:
+                yield (FRAG_VAR, var.group(1))
             else:
-                output.append(Text(fragment))
-        return output
-
+                yield (FRAG_TEXT, fragment)
+      
     def render(self, context, func=resolve):
         """ Returns joined rendered Fragments. """
         def render_all(self, context, func=resolve):
             for fragment in self.output:
-                yield fragment.render(context, func)
-
+                if fragment[0] == FRAG_VAR:
+                    yield str(func(fragment[1], context))
+                else:
+                    yield fragment[1]
+                    
         return ''.join(render_all(self, context, func))
 
