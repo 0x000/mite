@@ -17,40 +17,57 @@ TOKEN = re.compile(r'(%s\s*[A-Za-z_]+[A-Za-z0-9_]*'
                    '' % (TOKEN_OPEN, TOKEN_CLOSE))
 
 
-def resolve(identifier, context):
-    for i in identifier.split('.'):
-        context = context[i]
-    return context
-
-
-class Compiler:
-    def __init__(self, source):
-        self.fragments = filter(None, TOKEN.split(source))
-        self.output = list(self.compile())
-
-    def compile(self):
-        """
-        Returns a list of tuples.
-        
-        Each tuple has two information:
-        (`FRAG_VAR`, `identifier`)
-        (`FRAG_TEXT`, `text`)
-        """
-        for fragment in self.fragments:
-            var = SYNTAX.match(fragment)
-            if var:
-                yield (FRAG_VAR, var.group(1))
+def get(identifier, scopes):
+    identifier = identifier.split('.')
+    keys = len(identifier)
+    current = 0
+    for scope in scopes:
+        for key in identifier:
+            if key in scope:
+                scope = scope[key]
+                current += 1
+                if keys == current:
+                    return scope
             else:
-                yield (FRAG_TEXT, fragment)
-      
-    def render(self, context, func=resolve):
-        """ Returns joined rendered Fragments. """
-        def render_all(self, context, func=resolve):
-            for fragment in self.output:
-                if fragment[0] == FRAG_VAR:
-                    yield str(func(fragment[1], context))
-                else:
-                    yield fragment[1]
-                    
-        return ''.join(render_all(self, context, func))
+                current = 0
+                break
+    return ''
+
+
+def compile(template=''):
+    """
+    Returns a list of tuples.
+
+    Each tuple has two informations:
+    (`FRAG_VAR`, `identifier`)
+    (`FRAG_TEXT`, `text`)
+    """
+    fragments = []
+    tokens = filter(None, TOKEN.split(template))
+
+    for token in tokens:
+        var = SYNTAX.match(token)
+        if var:
+            fragments.append((FRAG_VAR, var.group(1)))
+        else:
+            fragments.append((FRAG_TEXT, token))
+    return fragments
+
+
+def render(template='', data={}, scopes=None, fragments=[]):
+    """ Outputs the rendered template"""
+    output = ''
+
+    if scopes is None:
+        scopes = [data]
+
+    if not fragments:
+        fragments = compile(template)
+
+    for frag, info in fragments:
+        if frag == FRAG_VAR:
+            output += get(info, scopes)
+        else:
+            output += info
+    return output
 
