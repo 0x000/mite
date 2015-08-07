@@ -18,6 +18,7 @@ TOKEN = re.compile(r'(%s\s*[A-Za-z_]+[A-Za-z0-9_]*'
 
 
 def get(identifier, scopes):
+    """ Returns the value of an identifier in the scope list. """
     identifier = identifier.split('.')
     keys = len(identifier)
     current = 0
@@ -27,7 +28,7 @@ def get(identifier, scopes):
                 scope = scope[key]
                 current += 1
                 if keys == current:
-                    return scope
+                    return str(scope)
             else:
                 current = 0
                 break
@@ -54,11 +55,13 @@ def compile(template=''):
     return fragments
 
 
-def render(template='', data={}, scopes=None, fragments=[]):
-    """ Outputs the rendered template"""
+def render(template='', data={}, scopes=None, fragments=None):
+    """
+    Outputs the rendered template.
+    """
     output = ''
 
-    if scopes is None:
+    if not scopes:
         scopes = [data]
 
     if not fragments:
