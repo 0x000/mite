@@ -74,3 +74,13 @@ def render(template='', data={}, scopes=None, fragments=None):
             output += info
     return output
 
+
+def fetch(scope):
+    """ Decorator for custom rendering. """
+    def wrap(func):
+        def inner(*args):
+            template = func(*args)
+            return render(template, data=scope)
+        return inner
+    return wrap
+

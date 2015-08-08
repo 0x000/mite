@@ -81,5 +81,12 @@ class miteTests(unittest.TestCase):
         self.assertEqual(rendered, 'Hello, ok!')
 
 
+    def test_fetch(self):
+        @mite.fetch({'hello': 'Hello..'})
+        def custom_func(name):
+            return "{{hello}} %s" % name
+        self.assertEqual(custom_func('mite'), 'Hello.. mite')
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
