@@ -28,7 +28,7 @@ def get(identifier, scopes):
                 scope = scope[key]
                 current += 1
                 if keys == current:
-                    return str(scope)
+                    return scope
             else:
                 current = 0
                 break
@@ -69,7 +69,7 @@ def render(template='', data={}, scopes=None, fragments=None):
 
     for frag, info in fragments:
         if frag == FRAG_VAR:
-            output += get(info, scopes)
+            output += str(get(info, scopes))
         else:
             output += info
     return output
